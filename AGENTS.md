@@ -39,3 +39,11 @@
 ## 写代码
 
 匹配周围代码的写法、命名和注释密度。选能清楚解决问题的简单方案，只定义正在使用的抽象。验证改动涉及的重要行为，不为简单的样式改动写测试。
+
+## Cursor Cloud specific instructions
+
+Cloud Agent 环境自带 Node.js 24（`/usr/local/lib/nodejs/bin`，优先于镜像里的 Node 22）和 PostgreSQL 16。开发库是 `postgres://ubuntu@127.0.0.1:5432/aihot`，测试库是 `aihot_test`。
+
+- 启动时会拉起 PostgreSQL、补齐这两个库，并对开发库做迁移和种子。测试库只迁移、不灌种子。没有 `.env` 时用 `scripts/init-env.ts` 生成，并关掉 `COLLECT_ENABLED`、`MODEL_CALLS_ENABLED`、`FEISHU_*_ENABLED`、`INDEXNOW_SUBMIT_ENABLED`，同时设置 `DEV_AUTH_ROLE=admin`（开发环境免登录进后台）。已有 `.env` 不要覆盖。没有使用者提供的模型 key 时不要打开采集和模型调用。
+- 启动还会在后台拉起三个进程（端口已被占用就跳过）：`npm run dev:api`（127.0.0.1:3001）、`npm run dev:worker`、`npm run dev:web`（127.0.0.1:3000）。日志在 `/tmp/aihot-logs/`。
+- 测试：`DATABASE_URL=postgres://ubuntu@127.0.0.1:5432/aihot_test npm test`。测试库先迁移：`DATABASE_URL=postgres://ubuntu@127.0.0.1:5432/aihot_test node --env-file=.env scripts/migrate.ts`。
